@@ -7,8 +7,8 @@ from bokeh.layouts import gridplot
 from itertools import cycle
 import pandas as pd
 
-def plot(df, columns, date=False, date_format="%Y-%m-%d"):
-    output_notebook()  # To display the plots in Jupyter Notebook
+def multiPlot(df, columns, date=False, date_format="%Y-%m-%d"):
+    #output_notebook()  # To display the plots in Jupyter Notebook
 
     color_cycle = cycle(["red", "blue", "green", "orange", "purple", "yellow", "pink", "brown", "gray", "teal", 
                         "navy", "olive", "maroon", "cyan", "magenta", "gold", "lime", "indigo", "silver", "black"])
@@ -44,14 +44,20 @@ def plot(df, columns, date=False, date_format="%Y-%m-%d"):
             else:
                 line = p.line(df[x], df[y_col], legend_label=y_col, y_range_name=f"secondary{i-1}", color=color)
 
-            # Add HoverTool to each line
-            tooltips = [(x, f"@{{{x}}}"), (y_col, f"@{{{y_col}}}")]
-
-            hover = HoverTool(renderers=[line], tooltips=tooltips)
-            p.add_tools(hover)
 
         if date:
-            p.xaxis.formatter = DatetimeTickFormatter(seconds=date_format)
+            p.xaxis.formatter = DatetimeTickFormatter()
+            tooltips = [
+            ('Date', '@x{'+ date_format +'}'),
+            ('Value', '@y')
+            ]
+            p.add_tools(HoverTool(tooltips=tooltips, formatters={'@x': 'datetime'}, mode='vline'))    
+        else:
+            tooltips = [
+            ('X', '@x'),
+            ('Y', '@y')
+            ]
+            p.add_tools(HoverTool(tooltips=tooltips, mode='vline')) 
 
         p.legend.location = "top_left"
 
@@ -61,6 +67,7 @@ def plot(df, columns, date=False, date_format="%Y-%m-%d"):
     grid = gridplot(figures, ncols=2)  # Adjust the number of columns as needed
 
     show(grid)
+
 
 
 
@@ -76,9 +83,9 @@ formatted_timestamps = timestamps.strftime("%Y-%m-%d %H:%M:%S")
 
 # %%
 import pandas as pd
-test_df = pd.DataFrame({"rad": x, "cos": cosin, "sin": sinus, "date": timestamps})
+test_df = pd.DataFrame({"rad": x, "cos": cosin, "sin": sinus, "date": formatted_timestamps})
 # %%
 
-plot(test_df, [["rad", "cos"], ["rad", "sin"],["rad", "sin","cos"]],date = False)
-plot(test_df,[["date","cos"],["date","sin"],["date","sin","cos"]],date = True,date_format="%Y-%m-%d %H:%M:%S")
+multiPlot(test_df, [["rad", "cos"], ["rad", "sin"],["rad", "sin","cos"]],date = False)
+multiPlot(test_df,[["date","cos"],["date","sin"],["date","sin","cos"]],date = True,date_format="%Y-%m-%d %H:%M:%S")
 # %%
